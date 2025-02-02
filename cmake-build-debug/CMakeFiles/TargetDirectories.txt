@@ -1,0 +1,3 @@
+H:/My Projects/C-Language/cmake-build-debug/CMakeFiles/untitled1.dir
+H:/My Projects/C-Language/cmake-build-debug/CMakeFiles/edit_cache.dir
+H:/My Projects/C-Language/cmake-build-debug/CMakeFiles/rebuild_cache.dir
