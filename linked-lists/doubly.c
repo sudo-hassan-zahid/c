@@ -69,6 +69,128 @@ void head_push(LinkedList *list, int value)
     list->length++;
 }
 
+void head_pop(LinkedList *list)
+{
+    if (list == NULL || list->head == NULL)
+    {
+        return;
+    }
+
+    Node *temp = list->head;
+    list->head = list->head->next;
+
+    if (list->head != NULL)
+    {
+        list->head->prev = NULL;
+    }
+    else
+    {
+        list->tail = NULL; // If the list is empty after deletion
+    }
+
+    free(temp);
+    list->length--;
+}
+
+void tail_pop(LinkedList *list)
+{
+    if (list == NULL || list->tail == NULL)
+    {
+        return;
+    }
+
+    Node *temp = list->tail;
+    list->tail = list->tail->prev;
+
+    if (list->tail != NULL)
+    {
+        list->tail->next = NULL;
+    }
+    else
+    {
+        list->head = NULL; // If the list is empty after deletion
+    }
+
+    free(temp);
+    list->length--;
+}
+
+void delete_value(LinkedList *list, int value)
+{
+    if (list == NULL || list->head == NULL)
+    {
+        return;
+    }
+
+    Node *current = list->head;
+    while (current != NULL && current->value != value) // Change 'data' to 'value'
+    {
+        current = current->next;
+    }
+
+    if (current == NULL) // Value not found
+    {
+        return;
+    }
+
+    if (current->prev != NULL)
+    {
+        current->prev->next = current->next;
+    }
+    else
+    {
+        list->head = current->next;
+    }
+
+    if (current->next != NULL)
+    {
+        current->next->prev = current->prev;
+    }
+    else
+    {
+        list->tail = current->prev;
+    }
+
+    free(current);
+    list->length--;
+}
+
+void delete_index(LinkedList *list, int index)
+{
+    if (list == NULL || list->head == NULL || index < 0 || index >= list->length)
+    {
+        return;
+    }
+
+    Node *current = list->head;
+    for (int i = 0; i < index; i++)
+    {
+        current = current->next;
+    }
+
+    if (current->prev != NULL)
+    {
+        current->prev->next = current->next;
+    }
+    else
+    {
+        list->head = current->next;
+    }
+
+    if (current->next != NULL)
+    {
+        current->next->prev = current->prev;
+    }
+    else
+    {
+        list->tail = current->prev;
+    }
+
+    free(current);
+    list->length--;
+}
+
+
 void tail_push(LinkedList *list, int value)
 {
     if (list == NULL)
@@ -98,56 +220,38 @@ void tail_push(LinkedList *list, int value)
     list->length++; // Increment the length of the list
 }
 
-Node *insert_index(LinkedList *list, int index, int value)
+void insert_index(LinkedList *list, int index, int value)
 {
-    if (list == NULL)
+    if (list == NULL || index < 0 || index > list->length)
     {
-        printf("List not initialized!\n");
-        return NULL;
-    }
-
-    int original_index = index;
-    if (index < 0)
-    {
-        index = 0;
-        printf("Index %d is out of bounds, clamping to %d (head).\n", original_index, index);
-    }
-    if (index > list->length)
-    {
-        index = list->length;
-        printf("Index %d is out of bounds, clamping to %d (tail).\n", original_index, index);
+        return;
     }
 
     Node *node = create_node(value);
     if (!node)
-        return NULL; // Memory allocation failed
+    {
+        return;
+    }
 
-    if (index == 0)
-    { // Insert at head
+    if (index == 0)  // Insert at head
+    {
         node->next = list->head;
         if (list->head != NULL)
         {
             list->head->prev = node;
         }
-        list->head = node;
-        if (list->tail == NULL)
+        else
         {
-            list->tail = node; // First node becomes both head and tail
+            list->tail = node;  // If list was empty, set tail too
         }
+        list->head = node;
     }
     else
     {
         Node *current = list->head;
-        for (int i = 0; i < index - 1 && current != NULL; i++)
+        for (int i = 0; i < index - 1; i++)
         {
             current = current->next;
-        }
-
-        if (current == NULL)
-        {
-            printf("Invalid index!\n");
-            free(node);
-            return NULL;
         }
 
         node->next = current->next;
@@ -156,17 +260,86 @@ Node *insert_index(LinkedList *list, int index, int value)
         {
             current->next->prev = node;
         }
-        current->next = node;
-
-        if (node->next == NULL)
+        else
         {
-            list->tail = node; // Update tail if inserted at the end
+            list->tail = node;  // If inserting at the end, update tail
         }
+        current->next = node;
     }
 
-    list->length++; // Update length dynamically
-    return node;
+    list->length++;
 }
+
+
+// Node *insert_index(LinkedList *list, int index, int value)
+// {
+//     if (list == NULL)
+//     {
+//         printf("List not initialized!\n");
+//         return NULL;
+//     }
+//
+//     int original_index = index;
+//     if (index < 0)
+//     {
+//         index = 0;
+//         printf("Index %d is out of bounds, clamping to %d (head).\n", original_index, index);
+//     }
+//     if (index > list->length)
+//     {
+//         index = list->length;
+//         printf("Index %d is out of bounds, clamping to %d (tail).\n", original_index, index);
+//     }
+//
+//     Node *node = create_node(value);
+//     if (!node)
+//         return NULL; // Memory allocation failed
+//
+//     if (index == 0)
+//     { // Insert at head
+//         node->next = list->head;
+//         if (list->head != NULL)
+//         {
+//             list->head->prev = node;
+//         }
+//         list->head = node;
+//         if (list->tail == NULL)
+//         {
+//             list->tail = node; // First node becomes both head and tail
+//         }
+//     }
+//     else
+//     {
+//         Node *current = list->head;
+//         for (int i = 0; i < index - 1 && current != NULL; i++)
+//         {
+//             current = current->next;
+//         }
+//
+//         if (current == NULL)
+//         {
+//             printf("Invalid index!\n");
+//             free(node);
+//             return NULL;
+//         }
+//
+//         node->next = current->next;
+//         node->prev = current;
+//         if (current->next != NULL)
+//         {
+//             current->next->prev = node;
+//         }
+//         current->next = node;
+//
+//         if (node->next == NULL)
+//         {
+//             list->tail = node; // Update tail if inserted at the end
+//         }
+//     }
+//
+//     list->length++; // Update length dynamically
+//     return node;
+// }
 
 Node *get(LinkedList *list, int i)
 {
@@ -229,6 +402,34 @@ void print_reverse(LinkedList *list)
     printf("]\n");
 }
 
+void search(LinkedList *list, int value)
+{
+    if (list == NULL || list->head == NULL)
+    {
+        printf("%d not found!\n", value);
+        return;
+    }
+
+    Node *current = list->head;
+    int index = 0;
+
+    while (current != NULL)
+    {
+        if (current->value == value)
+        {
+            printf("%d found at index %d\n", value, index);
+            return;
+        }
+        current = current->next;
+        index++;
+    }
+
+    printf("%d not found!\n", value);
+}
+
+
+
+
 int main()
 {
     LinkedList *list = create_list();
@@ -254,7 +455,12 @@ int main()
     insert_index(list, 4, 40);
     insert_index(list, 5, 50);
     insert_index(list, 6, 60);
+    // head_pop(list);
+    // tail_pop(list);
+    delete_index(list,1);
+    delete_value(list,50);
     print_list(list);
     get(list, 2);
+    search(list, 30);
     return 0;
 }
